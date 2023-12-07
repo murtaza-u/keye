@@ -22,13 +22,12 @@ message KV {
 
 message GetParams {
   string key = 1;
-  GetOpts opts = 2;
+  optional GetOpts opts = 2;
 }
 
 message GetOpts {
-  optional bool with_prefix = 1;
-  optional bool with_regex = 2;
-  optional bool with_keys_only = 3;
+  bool regex = 1;
+  bool keys_only = 2;
 }
 
 message GetResponse {
@@ -38,12 +37,11 @@ message GetResponse {
 message PutParams {
   string key = 1;
   bytes val = 2;
-  PutOpts opts = 3;
+  optional PutOpts opts = 3;
 }
 
 message PutOpts {
-  optional bool with_prefix = 1;
-  optional bool with_regex = 2;
+  bool regex = 1;
 }
 
 message PutResponse {
@@ -52,12 +50,11 @@ message PutResponse {
 
 message DelParams {
   string key = 1;
-  DelOpts opts = 2;
+  optional DelOpts opts = 2;
 }
 
 message DelOpts {
-  optional bool with_prefix = 1;
-  optional bool with_regex = 2;
+  bool regex = 1;
 }
 
 message DelResponse {
@@ -66,12 +63,11 @@ message DelResponse {
 
 message WatchParams {
   string key = 1;
-  WatchOpts opts = 2;
+  optional WatchOpts opts = 2;
 }
 
 message WatchOpts {
-  optional bool with_prefix = 1;
-  optional bool with_regex = 2;
+  bool regex = 1;
 }
 
 message WatchResponse {

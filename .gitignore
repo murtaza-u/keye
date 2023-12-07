@@ -22,3 +22,5 @@ go.work
 
 /.direnv
 /.envrc
+/data.db
+/cmd/keyectl
