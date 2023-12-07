@@ -13,6 +13,10 @@
           go
           go-tools
           gopls
+          protobuf
+          protoc-gen-go
+          protoc-gen-go-grpc
+          grpcurl
         ];
       };
     };

@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+package keye;
+
+option go_package = "github.com/murtaza-u/keye";
+
+// Service Api consists of GET, PUT, DEL and WATCH RPC methods.
+// Alongside the fundamental key/value arguments, these RPC methods can
+// accept optional configuration parameters, allowing for a convenient
+// and intuitive client API.
+service Api {
+  rpc Get(GetParams) returns (GetResponse);
+  rpc Put(PutParams) returns (PutResponse);
+  rpc Del(DelParams) returns (DelResponse);
+  rpc Watch(WatchParams) returns (stream WatchResponse);
+}
+
+message KV {
+  string key = 1;
+  bytes val = 2;
+}
+
+message GetParams {
+  string key = 1;
+  GetOpts opts = 2;
+}
+
+message GetOpts {
+  optional bool with_prefix = 1;
+  optional bool with_regex = 2;
+  optional bool with_keys_only = 3;
+}
+
+message GetResponse {
+  repeated KV kvs = 1;
+}
+
+message PutParams {
+  string key = 1;
+  bytes val = 2;
+  PutOpts opts = 3;
+}
+
+message PutOpts {
+  optional bool with_prefix = 1;
+  optional bool with_regex = 2;
+}
+
+message PutResponse {
+  repeated string keys = 1;
+}
+
+message DelParams {
+  string key = 1;
+  DelOpts opts = 2;
+}
+
+message DelOpts {
+  optional bool with_prefix = 1;
+  optional bool with_regex = 2;
+}
+
+message DelResponse {
+  repeated string keys = 1;
+}
+
+message WatchParams {
+  string key = 1;
+  WatchOpts opts = 2;
+}
+
+message WatchOpts {
+  optional bool with_prefix = 1;
+  optional bool with_regex = 2;
+}
+
+message WatchResponse {
+  Event event = 1;
+  repeated KV kvs = 2;
+}
+
+enum Event {
+  EVENT_KEEPALIVE = 0;
+  EVENT_ADDED = 1;
+  EVENT_MODIFIED = 2;
+  EVENT_DELETED = 3;
+}
