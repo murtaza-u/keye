@@ -7,14 +7,25 @@ database. The database is internally powered by bboltDB
 package srv
 
 import (
+	"errors"
 	"fmt"
 	"net"
 
 	pb "github.com/murtaza-u/keye"
+	"github.com/murtaza-u/keye/watch"
 
 	"go.etcd.io/bbolt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+)
+
+var (
+	// ErrKeyNotFound is returned when the specified key does not exist
+	// in the database.
+	ErrKeyNotFound = errors.New("key not found")
+	// ErrNoKeysMatchRegex is returned when none of the keys the the
+	// database match the given regex.
+	ErrNoKeysMatchRegex = errors.New("no keys match the given regex")
 )
 
 const bucket = "KEYE"
@@ -23,15 +34,16 @@ const bucket = "KEYE"
 // on request.
 type Srv struct {
 	opts
-	db *bbolt.DB
+	db      *bbolt.DB
+	watcher *watch.W
 
 	pb.UnimplementedApiServer
 }
 
 // New creates a new database server from the given options.
-func New(optfuncs ...optFunc) (*Srv, error) {
+func New(optfns ...optFunc) (*Srv, error) {
 	opts := defaultOpts()
-	for _, fn := range optfuncs {
+	for _, fn := range optfns {
 		err := fn(&opts)
 		if err != nil {
 			return nil, err
@@ -45,8 +57,9 @@ func New(optfuncs ...optFunc) (*Srv, error) {
 	}
 
 	return &Srv{
-		opts: opts,
-		db:   db,
+		opts:    opts,
+		db:      db,
+		watcher: watch.New(opts.eventQueueSize),
 	}, nil
 }
 
@@ -57,12 +70,18 @@ func (s *Srv) Run() error {
 	if err != nil {
 		return err
 	}
+
 	grpcS := grpc.NewServer()
 	pb.RegisterApiServer(grpcS, s)
 	if s.reflect {
 		reflection.Register(grpcS)
 	}
-	defer s.db.Close()
+
+	go s.watcher.Listen()
+	defer s.watcher.Close()
+
+	defer s.close()
+
 	return grpcS.Serve(ln)
 }
 

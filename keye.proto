@@ -72,12 +72,11 @@ message WatchOpts {
 
 message WatchResponse {
   Event event = 1;
-  repeated KV kvs = 2;
+  KV kv = 2;
 }
 
 enum Event {
   EVENT_KEEPALIVE = 0;
-  EVENT_ADDED = 1;
-  EVENT_MODIFIED = 2;
-  EVENT_DELETED = 3;
+  EVENT_PUT = 1;
+  EVENT_DEL = 2;
 }

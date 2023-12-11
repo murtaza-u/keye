@@ -5,6 +5,7 @@ import (
 	"regexp"
 
 	pb "github.com/murtaza-u/keye"
+	"github.com/murtaza-u/keye/watch"
 
 	"go.etcd.io/bbolt"
 	"google.golang.org/grpc/codes"
@@ -31,7 +32,7 @@ func (s *Srv) Put(ctx context.Context, in *pb.PutParams) (*pb.PutResponse, error
 			Regex: false,
 		}
 	}
-	var keys []string
+	var kvs []watch.KV
 
 	err := s.db.Update(func(tx *bbolt.Tx) error {
 		b, err := tx.CreateBucketIfNotExists([]byte(bucket))
@@ -46,7 +47,7 @@ func (s *Srv) Put(ctx context.Context, in *pb.PutParams) (*pb.PutResponse, error
 				return status.Errorf(codes.Internal,
 					"failed to put key into the bucket: %s", err.Error())
 			}
-			keys = append(keys, k)
+			kvs = append(kvs, watch.KV{K: k, V: v})
 			return nil
 		}
 
@@ -55,7 +56,7 @@ func (s *Srv) Put(ctx context.Context, in *pb.PutParams) (*pb.PutResponse, error
 			return status.Errorf(codes.InvalidArgument, "invalid regex")
 		}
 
-		err = b.ForEach(func(k, _ []byte) error {
+		err = b.ForEach(func(k, v []byte) error {
 			if !reg.Match(k) {
 				return nil
 			}
@@ -63,12 +64,30 @@ func (s *Srv) Put(ctx context.Context, in *pb.PutParams) (*pb.PutResponse, error
 				return status.Errorf(codes.Internal,
 					"failed to put key into the bucket: %s", err.Error())
 			}
-			keys = append(keys, string(k))
+			kvs = append(kvs, watch.KV{K: string(k), V: v})
 			return nil
 		})
+		if err != nil {
+			return err
+		}
 
-		return err
+		if len(kvs) == 0 {
+			return status.Errorf(codes.NotFound, ErrNoKeysMatchRegex.Error())
+		}
+
+		return nil
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	s.watcher.Push(watch.NewPutEvents(kvs...)...)
+
+	keys := make([]string, len(kvs))
+	for i, kv := range kvs {
+		keys[i] = kv.K
+	}
+
 	return &pb.PutResponse{
 		Keys: keys,
 	}, err

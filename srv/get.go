@@ -2,7 +2,6 @@ package srv
 
 import (
 	"context"
-	"errors"
 	"regexp"
 
 	pb "github.com/murtaza-u/keye"
@@ -11,10 +10,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
-
-// ErrKeyNotFound is returned when the specified key does not exist in
-// the database.
-var ErrKeyNotFound = errors.New("key not found")
 
 // Get implements the gRPC API service Get method, retrieving keys. By
 // default, it returns the value for "key". When the regex option is
@@ -72,6 +67,10 @@ func (s *Srv) Get(ctx context.Context, in *pb.GetParams) (*pb.GetResponse, error
 			kvs = append(kvs, kv)
 			return nil
 		})
+
+		if len(kvs) == 0 {
+			return status.Errorf(codes.NotFound, ErrKeyNotFound.Error())
+		}
 
 		return nil
 	})

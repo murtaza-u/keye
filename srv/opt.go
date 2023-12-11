@@ -14,6 +14,8 @@ type opts struct {
 	// wpi (watcher ping interval) is the duration between two keepalive
 	// pings for the watcher.
 	wpi time.Duration
+	// size of the event queue
+	eventQueueSize uint
 	// path to the database file
 	path string
 	// enable gRPC reflection
@@ -40,6 +42,17 @@ func WithPort(port uint16) optFunc {
 func WithWatcherPingInterval(interval time.Duration) optFunc {
 	return func(o *opts) error {
 		o.wpi = interval
+		return nil
+	}
+}
+
+// WithEventQueueSize sets the event queue size used by the watcher to
+// notify subscribers about events in their occurrence order.
+//
+// Default size: 10
+func WithEventQueueSize(size uint) optFunc {
+	return func(o *opts) error {
+		o.eventQueueSize = size
 		return nil
 	}
 }
@@ -74,9 +87,10 @@ func WithReflection() optFunc {
 
 func defaultOpts() opts {
 	return opts{
-		port:    ":23023",
-		wpi:     time.Second * 10,
-		path:    "data.db",
-		reflect: false,
+		port:           ":23023",
+		wpi:            time.Second * 10,
+		eventQueueSize: 10,
+		path:           "data.db",
+		reflect:        false,
 	}
 }
