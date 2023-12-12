@@ -13,6 +13,7 @@ service Api {
   rpc Put(PutParams) returns (PutResponse);
   rpc Del(DelParams) returns (DelResponse);
   rpc Watch(WatchParams) returns (stream WatchResponse);
+  rpc Stats(Delta) returns (Measures);
 }
 
 message KV {
@@ -79,4 +80,33 @@ enum Event {
   EVENT_KEEPALIVE = 0;
   EVENT_PUT = 1;
   EVENT_DEL = 2;
+}
+
+message Delta {
+  int64 duration = 1;
+}
+
+message Measures {
+  TxStats TxStats = 1;
+  int32 FreePageN = 2;
+  int32 PendingPageN = 3;
+  int32 FreeAlloc = 4;
+  int32 FreelistInuse = 5;
+  int32 TxN = 6;
+  int32 OpenTxN = 7;
+}
+
+message TxStats {
+  int64 PageCount = 1;
+  int64 PageAlloc = 2;
+  int64 CursorCount = 3;
+  int64 NodeCount = 4;
+  int64 NodeDeref = 5;
+  int64 Rebalance = 6;
+  int64 RebalanceTime = 7;
+  int64 Split = 8;
+  int64 Spill = 9;
+  int64 SpillTime = 10;
+  int64 Write = 11;
+  int64 WriteTime = 12;
 }

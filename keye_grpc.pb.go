@@ -23,6 +23,7 @@ const (
 	Api_Put_FullMethodName   = "/keye.Api/Put"
 	Api_Del_FullMethodName   = "/keye.Api/Del"
 	Api_Watch_FullMethodName = "/keye.Api/Watch"
+	Api_Stats_FullMethodName = "/keye.Api/Stats"
 )
 
 // ApiClient is the client API for Api service.
@@ -33,6 +34,7 @@ type ApiClient interface {
 	Put(ctx context.Context, in *PutParams, opts ...grpc.CallOption) (*PutResponse, error)
 	Del(ctx context.Context, in *DelParams, opts ...grpc.CallOption) (*DelResponse, error)
 	Watch(ctx context.Context, in *WatchParams, opts ...grpc.CallOption) (Api_WatchClient, error)
+	Stats(ctx context.Context, in *Delta, opts ...grpc.CallOption) (*Measures, error)
 }
 
 type apiClient struct {
@@ -102,6 +104,15 @@ func (x *apiWatchClient) Recv() (*WatchResponse, error) {
 	return m, nil
 }
 
+func (c *apiClient) Stats(ctx context.Context, in *Delta, opts ...grpc.CallOption) (*Measures, error) {
+	out := new(Measures)
+	err := c.cc.Invoke(ctx, Api_Stats_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ApiServer is the server API for Api service.
 // All implementations must embed UnimplementedApiServer
 // for forward compatibility
@@ -110,6 +121,7 @@ type ApiServer interface {
 	Put(context.Context, *PutParams) (*PutResponse, error)
 	Del(context.Context, *DelParams) (*DelResponse, error)
 	Watch(*WatchParams, Api_WatchServer) error
+	Stats(context.Context, *Delta) (*Measures, error)
 	mustEmbedUnimplementedApiServer()
 }
 
@@ -128,6 +140,9 @@ func (UnimplementedApiServer) Del(context.Context, *DelParams) (*DelResponse, er
 }
 func (UnimplementedApiServer) Watch(*WatchParams, Api_WatchServer) error {
 	return status.Errorf(codes.Unimplemented, "method Watch not implemented")
+}
+func (UnimplementedApiServer) Stats(context.Context, *Delta) (*Measures, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Stats not implemented")
 }
 func (UnimplementedApiServer) mustEmbedUnimplementedApiServer() {}
 
@@ -217,6 +232,24 @@ func (x *apiWatchServer) Send(m *WatchResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Api_Stats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Delta)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApiServer).Stats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Api_Stats_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApiServer).Stats(ctx, req.(*Delta))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Api_ServiceDesc is the grpc.ServiceDesc for Api service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -235,6 +268,10 @@ var Api_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Del",
 			Handler:    _Api_Del_Handler,
+		},
+		{
+			MethodName: "Stats",
+			Handler:    _Api_Stats_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
