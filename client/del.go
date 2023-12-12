@@ -9,7 +9,7 @@ import (
 // Del deletes the specified key and its corresponding value from the
 // database, returning the deleted key(s). When used with WithRegex(),
 // Del treats the "key" as a regex, deleting all matching keys.
-func (c *C) Del(k string, optfns ...optFunc) ([]string, error) {
+func (c *C) Del(k string, optfns ...OptFunc) ([]string, error) {
 	opts := defaultOpts()
 	for _, fn := range optfns {
 		fn(&opts)

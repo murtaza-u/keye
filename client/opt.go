@@ -1,6 +1,6 @@
 package client
 
-type optFunc func(*opts)
+type OptFunc func(*opts)
 
 type opts struct {
 	// regex indicates whether the key should be treated as a regex.
@@ -17,7 +17,7 @@ type opts struct {
 // WithRegex configures the operation to treat the key as a regex.
 //
 // Applicable for: GET, PUT, DEL, WATCH
-func WithRegex() optFunc {
+func WithRegex() OptFunc {
 	return func(o *opts) {
 		o.regex = true
 	}
@@ -27,7 +27,7 @@ func WithRegex() optFunc {
 // values.
 //
 // Applicable for: GET, WATCH
-func WithKeysOnly() optFunc {
+func WithKeysOnly() OptFunc {
 	return func(o *opts) {
 		o.keysOnly = true
 	}

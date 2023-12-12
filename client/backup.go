@@ -11,7 +11,10 @@ import (
 )
 
 // Backup requests and concatenates database snapshot.
-func (c *C) Backup(ctx context.Context, chunkSize int64) ([]byte, error) {
+func (c *C) Backup(chunkSize int64) ([]byte, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), c.Timeout*2)
+	defer cancel()
+
 	stream, err := c.api.Backup(ctx, &pb.ChunkSize{
 		Size: chunkSize,
 	})

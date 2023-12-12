@@ -9,7 +9,7 @@ import (
 // Put adds a key-value pair to the database and returns the modified
 // key(s). When used with WithRegex(), Put treats the "key" as a regex,
 // updating all matching keys with the specified value.
-func (c *C) Put(k string, v []byte, optfns ...optFunc) ([]string, error) {
+func (c *C) Put(k string, v []byte, optfns ...OptFunc) ([]string, error) {
 	opts := defaultOpts()
 	for _, fn := range optfns {
 		fn(&opts)

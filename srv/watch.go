@@ -101,7 +101,7 @@ func (s *Srv) Watch(in *pb.WatchParams, stream pb.Api_WatchServer) error {
 
 		if err != nil {
 			if stat, ok := status.FromError(err); ok {
-				log.Println(stat)
+				log.Println(stat.Err())
 				return nil
 			}
 			log.Println(err)

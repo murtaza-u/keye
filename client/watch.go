@@ -13,7 +13,7 @@ import (
 // Watch watches specified key(s) in the database. If used with
 // WithRegex(), it treats the "key" as a regex, watching all matched
 // keys.
-func (c *C) Watch(ctx context.Context, k string, optfns ...optFunc) (*Watcher, error) {
+func (c *C) Watch(ctx context.Context, k string, optfns ...OptFunc) (*Watcher, error) {
 	opts := defaultOpts()
 	for _, fn := range optfns {
 		fn(&opts)

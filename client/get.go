@@ -10,7 +10,7 @@ import (
 // any. When WithRegex() is passed, Get treats the "key" as a regex.
 // When WithKeysOnly() is passed, Get only returns the key(s) without
 // the value(s).
-func (c *C) Get(k string, optfns ...optFunc) ([]*pb.KV, error) {
+func (c *C) Get(k string, optfns ...OptFunc) ([]*pb.KV, error) {
 	opts := defaultOpts()
 	for _, fn := range optfns {
 		fn(&opts)
