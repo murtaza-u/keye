@@ -19,11 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Api_Get_FullMethodName   = "/keye.Api/Get"
-	Api_Put_FullMethodName   = "/keye.Api/Put"
-	Api_Del_FullMethodName   = "/keye.Api/Del"
-	Api_Watch_FullMethodName = "/keye.Api/Watch"
-	Api_Stats_FullMethodName = "/keye.Api/Stats"
+	Api_Get_FullMethodName    = "/keye.Api/Get"
+	Api_Put_FullMethodName    = "/keye.Api/Put"
+	Api_Del_FullMethodName    = "/keye.Api/Del"
+	Api_Watch_FullMethodName  = "/keye.Api/Watch"
+	Api_Stats_FullMethodName  = "/keye.Api/Stats"
+	Api_Backup_FullMethodName = "/keye.Api/Backup"
 )
 
 // ApiClient is the client API for Api service.
@@ -35,6 +36,7 @@ type ApiClient interface {
 	Del(ctx context.Context, in *DelParams, opts ...grpc.CallOption) (*DelResponse, error)
 	Watch(ctx context.Context, in *WatchParams, opts ...grpc.CallOption) (Api_WatchClient, error)
 	Stats(ctx context.Context, in *Delta, opts ...grpc.CallOption) (*Measures, error)
+	Backup(ctx context.Context, in *ChunkSize, opts ...grpc.CallOption) (Api_BackupClient, error)
 }
 
 type apiClient struct {
@@ -113,6 +115,38 @@ func (c *apiClient) Stats(ctx context.Context, in *Delta, opts ...grpc.CallOptio
 	return out, nil
 }
 
+func (c *apiClient) Backup(ctx context.Context, in *ChunkSize, opts ...grpc.CallOption) (Api_BackupClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Api_ServiceDesc.Streams[1], Api_Backup_FullMethodName, opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &apiBackupClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Api_BackupClient interface {
+	Recv() (*Chunk, error)
+	grpc.ClientStream
+}
+
+type apiBackupClient struct {
+	grpc.ClientStream
+}
+
+func (x *apiBackupClient) Recv() (*Chunk, error) {
+	m := new(Chunk)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // ApiServer is the server API for Api service.
 // All implementations must embed UnimplementedApiServer
 // for forward compatibility
@@ -122,6 +156,7 @@ type ApiServer interface {
 	Del(context.Context, *DelParams) (*DelResponse, error)
 	Watch(*WatchParams, Api_WatchServer) error
 	Stats(context.Context, *Delta) (*Measures, error)
+	Backup(*ChunkSize, Api_BackupServer) error
 	mustEmbedUnimplementedApiServer()
 }
 
@@ -143,6 +178,9 @@ func (UnimplementedApiServer) Watch(*WatchParams, Api_WatchServer) error {
 }
 func (UnimplementedApiServer) Stats(context.Context, *Delta) (*Measures, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Stats not implemented")
+}
+func (UnimplementedApiServer) Backup(*ChunkSize, Api_BackupServer) error {
+	return status.Errorf(codes.Unimplemented, "method Backup not implemented")
 }
 func (UnimplementedApiServer) mustEmbedUnimplementedApiServer() {}
 
@@ -250,6 +288,27 @@ func _Api_Stats_Handler(srv interface{}, ctx context.Context, dec func(interface
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Api_Backup_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ChunkSize)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ApiServer).Backup(m, &apiBackupServer{stream})
+}
+
+type Api_BackupServer interface {
+	Send(*Chunk) error
+	grpc.ServerStream
+}
+
+type apiBackupServer struct {
+	grpc.ServerStream
+}
+
+func (x *apiBackupServer) Send(m *Chunk) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // Api_ServiceDesc is the grpc.ServiceDesc for Api service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -278,6 +337,11 @@ var Api_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "Watch",
 			Handler:       _Api_Watch_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "Backup",
+			Handler:       _Api_Backup_Handler,
 			ServerStreams: true,
 		},
 	},

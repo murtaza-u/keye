@@ -14,6 +14,7 @@ service Api {
   rpc Del(DelParams) returns (DelResponse);
   rpc Watch(WatchParams) returns (stream WatchResponse);
   rpc Stats(Delta) returns (Measures);
+  rpc Backup(ChunkSize) returns (stream Chunk);
 }
 
 message KV {
@@ -109,4 +110,13 @@ message TxStats {
   int64 SpillTime = 10;
   int64 Write = 11;
   int64 WriteTime = 12;
+}
+
+message Chunk {
+  bytes data = 1;
+  bool more = 2;
+}
+
+message ChunkSize {
+  int64 size = 1;
 }
