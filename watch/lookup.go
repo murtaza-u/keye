@@ -44,7 +44,9 @@ func (l *lookUp) publish(ev Event) {
 		return
 	}
 
-	for e := lst.Front(); e != nil; e = e.Next() {
+	e := lst.Front()
+	for {
+		next := e.Next()
 		s, ok := e.Value.(*Subscriber)
 		if !ok {
 			lst.Remove(e)
@@ -57,6 +59,10 @@ func (l *lookUp) publish(ev Event) {
 		if closed {
 			lst.Remove(e)
 		}
+		if next == nil {
+			break
+		}
+		e = next
 	}
 
 	l.Lock()

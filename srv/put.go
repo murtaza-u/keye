@@ -56,7 +56,7 @@ func (s *Srv) Put(ctx context.Context, in *pb.PutParams) (*pb.PutResponse, error
 			return status.Errorf(codes.InvalidArgument, "invalid regex")
 		}
 
-		err = b.ForEach(func(k, v []byte) error {
+		err = b.ForEach(func(k, _ []byte) error {
 			if !reg.Match(k) {
 				return nil
 			}
