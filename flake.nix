@@ -5,9 +5,29 @@
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
+      version = "23.12";
     in
     {
       formatter.${system} = pkgs.nixpkgs-fmt;
+      packages.${system} = rec {
+        keye = pkgs.buildGoModule {
+          pname = "keye";
+          version = version;
+          src = ./.;
+          vendorHash = "sha256-b2UMkS6VRt2r8yqoZPNz9YAEq2Npjd+uYsXWQ3JPSJU=";
+          CGO_ENABLED = 0;
+          subPackages = [ "cmd/keye" ];
+        };
+        dockerImage = pkgs.dockerTools.buildImage {
+          name = "keye";
+          tag = version;
+          config = {
+            Cmd = [ "${keye}/bin/keye" ];
+            WorkingDir = "/data";
+          };
+        };
+        default = dockerImage;
+      };
       devShells.${system}.default = pkgs.mkShell {
         packages = with pkgs; [
           go
