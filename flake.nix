@@ -19,7 +19,7 @@
           subPackages = [ "cmd/keye" ];
         };
         dockerImage = pkgs.dockerTools.buildImage {
-          name = "keye";
+          name = "murtazau/keye";
           tag = version;
           config = {
             Cmd = [ "${keye}/bin/keye" ];
