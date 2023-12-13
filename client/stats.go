@@ -2,9 +2,12 @@ package client
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	pb "github.com/murtaza-u/keye"
+
+	"google.golang.org/grpc/status"
 )
 
 // Measures represents statistics about the database.
@@ -61,6 +64,9 @@ func (c *C) Stats(delta time.Duration) (*Measures, error) {
 		Duration: int64(delta),
 	})
 	if err != nil {
+		if stat, ok := status.FromError(err); ok {
+			return nil, errors.New(stat.Message())
+		}
 		return nil, err
 	}
 

@@ -2,8 +2,11 @@ package client
 
 import (
 	"context"
+	"errors"
 
 	pb "github.com/murtaza-u/keye"
+
+	"google.golang.org/grpc/status"
 )
 
 // Put adds a key-value pair to the database and returns the modified
@@ -26,6 +29,9 @@ func (c *C) Put(k string, v []byte, optfns ...OptFunc) ([]string, error) {
 		},
 	})
 	if err != nil {
+		if stat, ok := status.FromError(err); ok {
+			return nil, errors.New(stat.Message())
+		}
 		return nil, err
 	}
 

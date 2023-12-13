@@ -2,8 +2,11 @@ package client
 
 import (
 	"context"
+	"errors"
 
 	pb "github.com/murtaza-u/keye"
+
+	"google.golang.org/grpc/status"
 )
 
 // Del deletes the specified key and its corresponding value from the
@@ -25,6 +28,9 @@ func (c *C) Del(k string, optfns ...OptFunc) ([]string, error) {
 		},
 	})
 	if err != nil {
+		if stat, ok := status.FromError(err); ok {
+			return nil, errors.New(stat.Message())
+		}
 		return nil, err
 	}
 

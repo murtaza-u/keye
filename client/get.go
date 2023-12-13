@@ -2,8 +2,11 @@ package client
 
 import (
 	"context"
+	"errors"
 
 	pb "github.com/murtaza-u/keye"
+
+	"google.golang.org/grpc/status"
 )
 
 // Get retrieves keys. By default, Get returns the value for "key", if
@@ -27,6 +30,9 @@ func (c *C) Get(k string, optfns ...OptFunc) ([]*pb.KV, error) {
 		},
 	})
 	if err != nil {
+		if stat, ok := status.FromError(err); ok {
+			return nil, errors.New(stat.Message())
+		}
 		return nil, err
 	}
 
