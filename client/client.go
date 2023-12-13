@@ -6,7 +6,7 @@ operations.
 package client
 
 import (
-	pb "github.com/murtaza-u/keye"
+	"github.com/murtaza-u/keye/internal/pb"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

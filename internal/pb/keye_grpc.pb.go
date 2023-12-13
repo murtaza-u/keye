@@ -4,7 +4,7 @@
 // - protoc             v4.24.4
 // source: keye.proto
 
-package keye
+package pb
 
 import (
 	context "context"
@@ -19,12 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Api_Get_FullMethodName    = "/keye.Api/Get"
-	Api_Put_FullMethodName    = "/keye.Api/Put"
-	Api_Del_FullMethodName    = "/keye.Api/Del"
-	Api_Watch_FullMethodName  = "/keye.Api/Watch"
-	Api_Stats_FullMethodName  = "/keye.Api/Stats"
-	Api_Backup_FullMethodName = "/keye.Api/Backup"
+	Api_Get_FullMethodName    = "/pb.Api/Get"
+	Api_Put_FullMethodName    = "/pb.Api/Put"
+	Api_Del_FullMethodName    = "/pb.Api/Del"
+	Api_Watch_FullMethodName  = "/pb.Api/Watch"
+	Api_Stats_FullMethodName  = "/pb.Api/Stats"
+	Api_Backup_FullMethodName = "/pb.Api/Backup"
 )
 
 // ApiClient is the client API for Api service.
@@ -313,7 +313,7 @@ func (x *apiBackupServer) Send(m *Chunk) error {
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Api_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "keye.Api",
+	ServiceName: "pb.Api",
 	HandlerType: (*ApiServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

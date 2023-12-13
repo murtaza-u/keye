@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package keye;
+package pb;
 
-option go_package = "github.com/murtaza-u/keye";
+option go_package = "github.com/murtaza-u/keye/internal/pb";
 
 // Service Api consists of GET, PUT, DEL and WATCH RPC methods.
 // Alongside the fundamental key/value arguments, these RPC methods can

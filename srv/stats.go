@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	pb "github.com/murtaza-u/keye"
+	"github.com/murtaza-u/keye/internal/pb"
 )
 
 // Stats implements the gRPC API service Stat method. It returns

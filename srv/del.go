@@ -4,7 +4,7 @@ import (
 	"context"
 	"regexp"
 
-	pb "github.com/murtaza-u/keye"
+	"github.com/murtaza-u/keye/internal/pb"
 	"github.com/murtaza-u/keye/watch"
 
 	"go.etcd.io/bbolt"

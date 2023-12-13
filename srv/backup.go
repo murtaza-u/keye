@@ -3,7 +3,7 @@ package srv
 import (
 	"bytes"
 
-	pb "github.com/murtaza-u/keye"
+	"github.com/murtaza-u/keye/internal/pb"
 
 	"go.etcd.io/bbolt"
 	"google.golang.org/grpc/codes"

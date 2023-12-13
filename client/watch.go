@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	pb "github.com/murtaza-u/keye"
+	"github.com/murtaza-u/keye/internal/pb"
 	"github.com/murtaza-u/keye/watch"
 
 	"google.golang.org/grpc/status"
