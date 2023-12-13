@@ -34,6 +34,7 @@ var delCmd = &cli.Command{
 		if err != nil {
 			return err
 		}
+		defer c.Close()
 
 		var opts []client.OptFunc
 		if ctx.Bool("regex") {

@@ -32,6 +32,7 @@ var statsCmd = &cli.Command{
 		if err != nil {
 			return err
 		}
+		defer c.Close()
 
 		stats, err := c.Stats(dur)
 		if err != nil {

@@ -29,6 +29,7 @@ var backupCmd = &cli.Command{
 		if err != nil {
 			return err
 		}
+		defer c.Close()
 
 		snap, err := c.Backup(128)
 		if err != nil {
