@@ -28,7 +28,8 @@ var watchCmd = &cli.Command{
 			return fmt.Errorf("missing key")
 		}
 
-		c, err := client.New(client.Config{Addr: address})
+		parent := ctx.Lineage()[0]
+		c, err := client.New(client.Config{Addr: parent.String("address")})
 		if err != nil {
 			return err
 		}

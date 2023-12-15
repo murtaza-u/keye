@@ -10,11 +10,6 @@ import (
 
 const version = "23.12"
 
-var (
-	address string
-	timeout time.Duration
-)
-
 func init() {
 	log.SetFlags(0)
 }
@@ -44,11 +39,6 @@ func main() {
 	}
 	app.Commands = []*cli.Command{
 		getCmd, putCmd, delCmd, watchCmd, backupCmd, statsCmd,
-	}
-	app.Action = func(ctx *cli.Context) error {
-		address = ctx.String("address")
-		timeout = ctx.Duration("timeout")
-		return nil
 	}
 	err := app.Run(os.Args)
 	if err != nil {

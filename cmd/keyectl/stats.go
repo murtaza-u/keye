@@ -24,16 +24,17 @@ var statsCmd = &cli.Command{
 		},
 	},
 	Action: func(ctx *cli.Context) error {
-		dur := ctx.Duration("duration")
+		parent := ctx.Lineage()[0]
 		c, err := client.New(client.Config{
-			Addr:    address,
-			Timeout: timeout,
+			Addr:    parent.String("address"),
+			Timeout: parent.Duration("timeout"),
 		})
 		if err != nil {
 			return err
 		}
 		defer c.Close()
 
+		dur := ctx.Duration("duration")
 		stats, err := c.Stats(dur)
 		if err != nil {
 			if stat, ok := status.FromError(err); ok {

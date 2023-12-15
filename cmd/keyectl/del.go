@@ -27,9 +27,10 @@ var delCmd = &cli.Command{
 			return fmt.Errorf("missing key")
 		}
 
+		parent := ctx.Lineage()[0]
 		c, err := client.New(client.Config{
-			Addr:    address,
-			Timeout: timeout,
+			Addr:    parent.String("address"),
+			Timeout: parent.Duration("timeout"),
 		})
 		if err != nil {
 			return err
