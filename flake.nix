@@ -14,7 +14,7 @@
           pname = "keye";
           version = version;
           src = ./.;
-          vendorHash = "sha256-b2UMkS6VRt2r8yqoZPNz9YAEq2Npjd+uYsXWQ3JPSJU=";
+          vendorHash = "sha256-8446aGvsJSE5DWqotsB5KD8hKUB877br/DI5its5hvI=";
           CGO_ENABLED = 0;
           subPackages = [ "cmd/keye" ];
         };

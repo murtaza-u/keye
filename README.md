@@ -39,14 +39,32 @@
   </a>
 </p></div>
 
-## Deploy database server
+## Database server
 
 ```sh
-docker run -d \
+docker run -it -d \
+    --name keye \
     -p 23023:23023 \
     -v "$HOME/.local/share/keye:/data" \
+    -e "KEYE_DB_FILE_PATH=/data/data.db" \
+    -e "KEYE_PORT=23023" \
+    -e "KEYE_WATCHER_PING_INTERVAL=10s" \
+    -e "KEYE_EVENT_QUEUE_SIZE=10" \
+    -e "KEYE_ENABLE_REFLECTION=0" \
+    -e "KEYE_USE_JSON_LOGGER=0" \
+    -e "KEYE_DEBUG=0" \
     murtazau/keye:23.12
 ```
+
+| Environment variable       | Go type       | Description                                     | Default   |
+|----------------------------|---------------|-------------------------------------------------|-----------|
+| KEYE_DB_FILE_PATH          | string        | path to the database file                       | ./data.db |
+| KEYE_PORT                  | uint16        | port for the database server                    | 23023     |
+| KEYE_WATCHER_PING_INTERVAL | time.Duration | duration b/w two keepalive ping for the watcher | 10s       |
+| KEYE_EVENT_QUEUE_SIZE      | uint          | size of the event queue                         | 10        |
+| KEYE_ENABLE_REFLECTION     | bool          | enable gRPC reflection                          | false     |
+| KEYE_USE_JSON_LOGGER       | bool          | use JSON logger                                 | false     |
+| KEYE_DEBUG                 | bool          | enable debug logs                               | false     |
 
 ## Client library
 
@@ -91,3 +109,18 @@ func main() {
 ```
 
 Full API reference: [GoDoc](https://godoc.org/github.com/murtaza-u/keye)
+
+## CLI tool
+
+`keyectl` is a command-line tool for interacting with the `Keye`
+database server.
+
+```sh
+go install github.com/murtaza-u/keye/cmd/keyectl@latest
+```
+
+### Usage
+
+```sh
+keyectl help
+```
