@@ -9,9 +9,11 @@ package srv
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"net"
 
 	"github.com/murtaza-u/keye/internal/pb"
+	"github.com/murtaza-u/keye/srv/log"
 	"github.com/murtaza-u/keye/watch"
 
 	"go.etcd.io/bbolt"
@@ -41,7 +43,7 @@ type Srv struct {
 }
 
 // New creates a new database server from the given options.
-func New(optfns ...optFunc) (*Srv, error) {
+func New(optfns ...OptFunc) (*Srv, error) {
 	opts := defaultOpts()
 	for _, fn := range optfns {
 		err := fn(&opts)
@@ -71,17 +73,29 @@ func (s *Srv) Run() error {
 		return err
 	}
 
-	grpcS := grpc.NewServer()
+	// configure logging
+	logger := log.New(log.Config{
+		Debug:   s.debug,
+		UseJSON: s.jsonLogger,
+	})
+	slog.SetDefault(logger.Logger)
+	grpcS := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(logger.NewUnaryInterceptor()),
+		grpc.ChainStreamInterceptor(logger.NewStreamInterceptor()),
+	)
+
 	pb.RegisterApiServer(grpcS, s)
 	if s.reflect {
 		reflection.Register(grpcS)
 	}
 
+	// setup watcher
 	go s.watcher.Listen()
 	defer s.watcher.Close()
 
 	defer s.close()
 
+	s.print()
 	return grpcS.Serve(ln)
 }
 

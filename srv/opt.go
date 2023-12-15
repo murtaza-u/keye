@@ -3,10 +3,13 @@ package srv
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
+
+	"github.com/Delta456/box-cli-maker/v2"
 )
 
-type optFunc func(*opts) error
+type OptFunc func(*opts) error
 
 type opts struct {
 	// port for the database server.
@@ -20,13 +23,17 @@ type opts struct {
 	path string
 	// enable gRPC reflection
 	reflect bool
+	// log in JSON
+	jsonLogger bool
+	// enable debug logs
+	debug bool
 }
 
 // WithPort sets the port for the database server. Ensure that the
 // chosen port is available and not in use.
 //
 // Default: 23023
-func WithPort(port uint16) optFunc {
+func WithPort(port uint16) OptFunc {
 	return func(o *opts) error {
 		o.port = fmt.Sprintf(":%d", port)
 		return nil
@@ -39,7 +46,7 @@ func WithPort(port uint16) optFunc {
 // connection issues.
 //
 // Default: 10s
-func WithWatcherPingInterval(interval time.Duration) optFunc {
+func WithWatcherPingInterval(interval time.Duration) OptFunc {
 	return func(o *opts) error {
 		o.wpi = interval
 		return nil
@@ -50,7 +57,7 @@ func WithWatcherPingInterval(interval time.Duration) optFunc {
 // notify subscribers about events in their occurrence order.
 //
 // Default size: 10
-func WithEventQueueSize(size uint) optFunc {
+func WithEventQueueSize(size uint) OptFunc {
 	return func(o *opts) error {
 		o.eventQueueSize = size
 		return nil
@@ -61,11 +68,15 @@ func WithEventQueueSize(size uint) optFunc {
 // the specified file is a directory or not writable.
 //
 // Default: ./data.db
-func WithDBPath(path string) optFunc {
+func WithDBPath(path string) OptFunc {
 	return func(o *opts) error {
 		info, err := os.Stat(path)
 		if err != nil && !os.IsNotExist(err) {
 			return err
+		}
+		if os.IsNotExist(err) {
+			o.path = path
+			return nil
 		}
 		if info.IsDir() {
 			return fmt.Errorf("%q is a directory", path)
@@ -78,11 +89,53 @@ func WithDBPath(path string) optFunc {
 // WithReflection enables gRPC reflection
 //
 // Default: disabled
-func WithReflection() optFunc {
+func WithReflection() OptFunc {
 	return func(o *opts) error {
 		o.reflect = true
 		return nil
 	}
+}
+
+// WithJSONLogger configures logger to use JSON.
+//
+// Default: disabled
+func WithJSONLogger() OptFunc {
+	return func(o *opts) error {
+		o.jsonLogger = true
+		return nil
+	}
+}
+
+// WithDebug enables debug logs.
+//
+// Default: disabled
+func WithDebug() OptFunc {
+	return func(o *opts) error {
+		o.debug = true
+		return nil
+	}
+}
+
+// print displays server options in a box format
+func (o opts) print() {
+	box := box.New(box.Config{
+		Px:            2,
+		Py:            2,
+		Type:          "Bold",
+		AllowWrapping: true,
+		ContentAlign:  "Left",
+		TitlePos:      "Bottom",
+	})
+	params := strings.Join([]string{
+		fmt.Sprintf("Address=%s", o.port),
+		fmt.Sprintf("DB=%s", o.path),
+		fmt.Sprintf("WPI=%s", o.wpi),
+		fmt.Sprintf("Event Queue Size=%d", o.eventQueueSize),
+		fmt.Sprintf("Reflection=%v", o.reflect),
+		fmt.Sprintf("JSON logger=%v", o.jsonLogger),
+		fmt.Sprintf("Debug=%v", o.debug),
+	}, "\n")
+	box.Print("Keye", params)
 }
 
 func defaultOpts() opts {
@@ -92,5 +145,7 @@ func defaultOpts() opts {
 		eventQueueSize: 10,
 		path:           "data.db",
 		reflect:        false,
+		jsonLogger:     false,
+		debug:          false,
 	}
 }

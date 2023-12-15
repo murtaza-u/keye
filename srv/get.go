@@ -2,6 +2,7 @@ package srv
 
 import (
 	"context"
+	"log/slog"
 	"regexp"
 
 	"github.com/murtaza-u/keye/internal/pb"
@@ -28,8 +29,8 @@ func (s *Srv) Get(ctx context.Context, in *pb.GetParams) (*pb.GetResponse, error
 			KeysOnly: false,
 		}
 	}
-	var kvs []*pb.KV
 
+	var kvs []*pb.KV
 	err := s.db.View(func(tx *bbolt.Tx) error {
 		b := tx.Bucket([]byte(bucket))
 		if b == nil {
@@ -77,6 +78,15 @@ func (s *Srv) Get(ctx context.Context, in *pb.GetParams) (*pb.GetResponse, error
 	if err != nil {
 		return nil, err
 	}
+
+	keys := make([]string, len(kvs))
+	for i, kv := range kvs {
+		keys[i] = kv.GetKey()
+	}
+	slog.Debug("matched keys",
+		slog.String("method", "Get"), slog.Int("count", len(keys)),
+		slog.Any("keys", keys),
+	)
 
 	return &pb.GetResponse{
 		Kvs: kvs,

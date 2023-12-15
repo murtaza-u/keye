@@ -2,6 +2,7 @@ package srv
 
 import (
 	"context"
+	"log/slog"
 	"regexp"
 
 	"github.com/murtaza-u/keye/internal/pb"
@@ -32,8 +33,8 @@ func (s *Srv) Put(ctx context.Context, in *pb.PutParams) (*pb.PutResponse, error
 			Regex: false,
 		}
 	}
-	var kvs []watch.KV
 
+	var kvs []watch.KV
 	err := s.db.Update(func(tx *bbolt.Tx) error {
 		b, err := tx.CreateBucketIfNotExists([]byte(bucket))
 		if err != nil {
@@ -81,12 +82,17 @@ func (s *Srv) Put(ctx context.Context, in *pb.PutParams) (*pb.PutResponse, error
 		return nil, err
 	}
 
-	s.watcher.Push(watch.NewPutEvents(kvs...)...)
-
 	keys := make([]string, len(kvs))
 	for i, kv := range kvs {
 		keys[i] = kv.K
 	}
+
+	slog.Debug("matched keys",
+		slog.String("method", "Put"), slog.Int("count", len(keys)),
+		slog.Any("keys", keys),
+	)
+
+	s.watcher.Push(watch.NewPutEvents(kvs...)...)
 
 	return &pb.PutResponse{
 		Keys: keys,

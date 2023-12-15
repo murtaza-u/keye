@@ -2,6 +2,7 @@ package srv
 
 import (
 	"context"
+	"log/slog"
 	"regexp"
 
 	"github.com/murtaza-u/keye/internal/pb"
@@ -30,7 +31,6 @@ func (s *Srv) Del(ctx context.Context, in *pb.DelParams) (*pb.DelResponse, error
 	}
 
 	var kvs []watch.KV
-
 	err := s.db.Update(func(tx *bbolt.Tx) error {
 		b, err := tx.CreateBucketIfNotExists([]byte(bucket))
 		if err != nil {
@@ -82,12 +82,17 @@ func (s *Srv) Del(ctx context.Context, in *pb.DelParams) (*pb.DelResponse, error
 		return nil, err
 	}
 
-	s.watcher.Push(watch.NewDelEvents(kvs...)...)
-
 	keys := make([]string, len(kvs))
 	for i, kv := range kvs {
 		keys[i] = kv.K
 	}
+
+	slog.Debug("matched keys",
+		slog.String("method", "Del"), slog.Int("count", len(keys)),
+		slog.Any("keys", keys),
+	)
+
+	s.watcher.Push(watch.NewDelEvents(kvs...)...)
 
 	return &pb.DelResponse{
 		Keys: keys,

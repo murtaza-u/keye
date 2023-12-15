@@ -1,7 +1,7 @@
 package srv
 
 import (
-	"log"
+	"log/slog"
 	"regexp"
 	"time"
 
@@ -68,6 +68,11 @@ func (s *Srv) Watch(in *pb.WatchParams, stream pb.Api_WatchServer) error {
 		return err
 	}
 
+	slog.Debug("matched keys",
+		slog.String("method", "Watch"), slog.Int("count", len(keys)),
+		slog.Any("keys", keys),
+	)
+
 	sub := s.watcher.Watch(keys...)
 	defer sub.Close()
 
@@ -86,6 +91,15 @@ func (s *Srv) Watch(in *pb.WatchParams, stream pb.Api_WatchServer) error {
 		case <-stream.Context().Done():
 			return nil
 		case ev := <-sub.NextEvent():
+			slog.Debug("publishing event to subscriber",
+				slog.String("method", "Watch"),
+				slog.Group("event",
+					slog.Int("type", ev.Type),
+					slog.String("key", ev.KV.K),
+					slog.Any("val", ev.KV.V),
+				),
+			)
+
 			err = stream.Send(&pb.WatchResponse{
 				Event: pb.Event(ev.Type),
 				Kv: &pb.KV{
@@ -101,10 +115,11 @@ func (s *Srv) Watch(in *pb.WatchParams, stream pb.Api_WatchServer) error {
 
 		if err != nil {
 			if stat, ok := status.FromError(err); ok {
-				log.Println(stat.Err())
+				slog.Error(stat.Message(),
+					slog.String("code", stat.Code().String()))
 				return nil
 			}
-			log.Println(err)
+			slog.Error(err.Error())
 			return nil
 		}
 	}
